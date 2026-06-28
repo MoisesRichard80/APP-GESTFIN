@@ -40,25 +40,7 @@ function carregarDados() {
   } catch (e) {
     transacoes = [];
   }
-  // Dados de exemplo se vazio
-  if (transacoes.length === 0) {
-    const hoje = new Date();
-    const dias = (n) => {
-      const d = new Date(hoje);
-      d.setDate(d.getDate() - n);
-      return d.toISOString().slice(0, 10);
-    };
-    transacoes = [
-      { id: nextId++, tipo: 'entrada', valor: 850,  desc: 'Venda balcão',         data: dias(6), cat: 'Vendas',     origem: 'manual' },
-      { id: nextId++, tipo: 'saida',   valor: 320,  desc: 'Fornecedor Atacado',   data: dias(5), cat: 'Fornecedor', origem: 'manual' },
-      { id: nextId++, tipo: 'entrada', valor: 1200, desc: 'PIX João Silva',        data: dias(4), cat: 'Serviços',   origem: 'pix'    },
-      { id: nextId++, tipo: 'saida',   valor: 150,  desc: 'Conta de luz',         data: dias(3), cat: 'Outros',     origem: 'manual' },
-      { id: nextId++, tipo: 'entrada', valor: 430,  desc: 'Nota Fiscal 0042',     data: dias(2), cat: 'Vendas',     origem: 'nota'   },
-      { id: nextId++, tipo: 'saida',   valor: 200,  desc: 'PIX Fornecedor',       data: dias(1), cat: 'Fornecedor', origem: 'pix'    },
-      { id: nextId++, tipo: 'entrada', valor: 560,  desc: 'Serviço instalação',   data: dias(0), cat: 'Serviços',   origem: 'manual' },
-    ];
-    salvarDados();
-  }
+
 }
 
 function salvarDados() {
