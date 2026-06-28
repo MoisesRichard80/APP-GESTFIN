@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2a78d6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Finanças PME">
+  <meta name="description" content="Gestão financeira simples para pequenas empresas">
+  <title>Finanças PME</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-row">
+      <div>
+        <div class="biz-name" id="biz-name-display">Minha Empresa</div>
+        <div class="biz-sub" id="mes-display"></div>
+      </div>
+      <div class="avatar" id="avatar-initials" onclick="abrirConfig()">ME</div>
+    </div>
+  </div>
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <div class="tab active" onclick="showTab('dash')" id="tab-dash">
+      <i class="ti ti-home"></i><span>Início</span>
+    </div>
+    <div class="tab" onclick="showTab('scan')" id="tab-scan">
+      <i class="ti ti-scan"></i><span>Escanear</span>
+    </div>
+    <div class="tab" onclick="showTab('manual')" id="tab-manual">
+      <i class="ti ti-plus"></i><span>Lançar</span>
+    </div>
+    <div class="tab" onclick="showTab('hist')" id="tab-hist">
+      <i class="ti ti-list"></i><span>Histórico</span>
+    </div>
+  </div>
+
+  <!-- ======================== DASHBOARD ======================== -->
+  <div class="screen active" id="screen-dash">
+    <div class="saldo-card">
+      <div class="saldo-label">Saldo atual</div>
+      <div class="saldo-valor" id="saldo-display">R$ 0,00</div>
+      <div class="saldo-row">
+        <div class="mini-card">
+          <div class="mini-label"><i class="ti ti-arrow-up"></i> Entradas</div>
+          <div class="mini-valor" id="total-entradas-display">R$ 0</div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-label"><i class="ti ti-arrow-down"></i> Saídas</div>
+          <div class="mini-valor" id="total-saidas-display">R$ 0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart-header">
+        <span class="chart-title">Fluxo de caixa</span>
+        <div class="chart-legend">
+          <span class="leg-dot" style="background:#1baf7a"></span> Entradas
+          <span class="leg-dot" style="background:#e34948;margin-left:8px"></span> Saídas
+        </div>
+      </div>
+      <div class="chart-area">
+        <canvas id="fluxoChart" role="img" aria-label="Gráfico de barras com entradas e saídas dos últimos 7 dias"></canvas>
+      </div>
+    </div>
+
+    <div class="section-title">Últimos lançamentos</div>
+    <div id="ultimos-lista"></div>
+  </div>
+
+  <!-- ======================== SCANNER ======================== -->
+  <div class="screen" id="screen-scan">
+    <div class="card">
+      <div class="card-title">Escanear documento</div>
+      <div class="card-sub">A IA lê comprovantes de PIX, notas fiscais e recibos automaticamente</div>
+      <div class="scan-btns">
+        <div class="scan-btn" onclick="triggerUpload()">
+          <i class="ti ti-camera"></i>
+          <span>Câmera / Galeria</span>
+        </div>
+        <div class="scan-btn" onclick="triggerUpload()">
+          <i class="ti ti-file-invoice"></i>
+          <span>Arquivo de imagem</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="upload-area" id="upload-area" onclick="triggerUpload()">
+      <input type="file" id="file-input" accept="image/*" onchange="handleFile(event)">
+      <i class="ti ti-cloud-upload"></i>
+      <p>Toque para selecionar imagem</p>
+      <p class="upload-sub">Comprovante PIX ou Nota Fiscal — JPG, PNG</p>
+    </div>
+
+    <div id="ia-processing" style="display:none">
+      <div class="ia-loading">
+        <i class="ti ti-cpu spin"></i>
+        <p>Analisando com IA...</p>
+        <p class="ia-loading-sub">Extraindo valor, data e tipo do documento</p>
+      </div>
+    </div>
+
+    <div id="ia-result-area" style="display:none">
+      <div id="img-thumb-wrap" style="display:none;margin-bottom:10px">
+        <img id="img-preview" src="" alt="Documento escaneado" style="width:100%;border-radius:8px;max-height:160px;object-fit:cover">
+      </div>
+      <div class="card">
+        <div class="ia-result-header">
+          <i class="ti ti-sparkles" style="color:#1baf7a;font-size:18px"></i>
+          <span class="card-title" style="margin:0">Dados extraídos pela IA</span>
+          <span id="doc-type-badge" class="badge badge-pix">PIX</span>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Tipo de lançamento</div>
+          <div class="tipo-btns">
+            <div class="tipo-btn" id="btn-entrada" onclick="setTipo('entrada')">
+              <i class="ti ti-arrow-up"></i> Entrada
+            </div>
+            <div class="tipo-btn" id="btn-saida" onclick="setTipo('saida')">
+              <i class="ti ti-arrow-down"></i> Saída
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Valor (R$)</div>
+          <input class="form-input" type="number" id="scan-valor" placeholder="0,00" step="0.01" min="0">
+        </div>
+        <div class="form-row">
+          <div class="form-label">Data</div>
+          <input class="form-input" type="date" id="scan-data">
+        </div>
+        <div class="form-row">
+          <div class="form-label">Descrição</div>
+          <input class="form-input" type="text" id="scan-desc" placeholder="Ex: Fornecedor XYZ">
+        </div>
+        <div class="form-row">
+          <div class="form-label">Observação da IA</div>
+          <div id="ia-obs" style="font-size:12px;color:#898781;line-height:1.5;padding:8px;background:#f7f7f5;border-radius:6px">—</div>
+        </div>
+        <button class="btn-primary" onclick="salvarScan()">
+          <i class="ti ti-check"></i> Confirmar e salvar
+        </button>
+        <button class="btn-secondary" onclick="cancelarScan()" style="margin-top:6px">
+          Cancelar e escanear outro
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== MANUAL ======================== -->
+  <div class="screen" id="screen-manual">
+    <div class="card">
+      <div class="card-title">Novo lançamento</div>
+      <div class="form-row">
+        <div class="form-label">Tipo</div>
+        <div class="tipo-btns">
+          <div class="tipo-btn" id="man-btn-entrada" onclick="setManualTipo('entrada')">
+            <i class="ti ti-arrow-up"></i> Entrada
+          </div>
+          <div class="tipo-btn" id="man-btn-saida" onclick="setManualTipo('saida')">
+            <i class="ti ti-arrow-down"></i> Saída
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">Valor (R$)</div>
+        <input class="form-input" type="number" id="man-valor" placeholder="0,00" step="0.01" min="0">
+      </div>
+      <div class="form-row">
+        <div class="form-label">Data</div>
+        <input class="form-input" type="date" id="man-data">
+      </div>
+      <div class="form-row">
+        <div class="form-label">Descrição</div>
+        <input class="form-input" type="text" id="man-desc" placeholder="Ex: Venda à vista, Aluguel...">
+      </div>
+      <div class="form-row">
+        <div class="form-label">Categoria</div>
+        <div class="cat-grid">
+          <div class="cat-chip" onclick="selectCat(this,'Vendas')"><i class="ti ti-shopping-cart"></i>Vendas</div>
+          <div class="cat-chip" onclick="selectCat(this,'Serviços')"><i class="ti ti-tool"></i>Serviços</div>
+          <div class="cat-chip" onclick="selectCat(this,'Fornecedor')"><i class="ti ti-truck"></i>Fornecedor</div>
+          <div class="cat-chip" onclick="selectCat(this,'Aluguel')"><i class="ti ti-building"></i>Aluguel</div>
+          <div class="cat-chip" onclick="selectCat(this,'Pessoal')"><i class="ti ti-users"></i>Pessoal</div>
+          <div class="cat-chip" onclick="selectCat(this,'Outros')"><i class="ti ti-dots"></i>Outros</div>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="salvarManual()">
+        <i class="ti ti-check"></i> Salvar lançamento
+      </button>
+    </div>
+  </div>
+
+  <!-- ======================== HISTÓRICO ======================== -->
+  <div class="screen" id="screen-hist">
+    <div class="hist-filter">
+      <div class="filt-btn active" onclick="filtrar(this,'todos')">Todos</div>
+      <div class="filt-btn" onclick="filtrar(this,'entrada')">Entradas</div>
+      <div class="filt-btn" onclick="filtrar(this,'saida')">Saídas</div>
+      <div class="filt-btn" onclick="filtrar(this,'pix')">PIX</div>
+      <div class="filt-btn" onclick="filtrar(this,'nota')">Nota Fiscal</div>
+    </div>
+    <div id="resumo-hist" style="margin-bottom:10px"></div>
+    <div id="hist-lista"></div>
+  </div>
+
+  <!-- MODAL CONFIG -->
+  <div id="modal-config" class="modal-overlay" style="display:none" onclick="fecharConfig(event)">
+    <div class="modal-box">
+      <div class="modal-title">Configurações</div>
+      <div class="form-row">
+        <div class="form-label">Nome da empresa</div>
+        <input class="form-input" type="text" id="config-nome" placeholder="Ex: Loja da Maria">
+      </div>
+      <div class="form-row">
+        <div class="form-label">Chave da API Claude (Anthropic)</div>
+        <input class="form-input" type="password" id="config-apikey" placeholder="sk-ant-...">
+        <div style="font-size:11px;color:#898781;margin-top:4px">
+          Necessária para leitura de documentos por IA. Obtenha em console.anthropic.com gratuitamente.
+        </div>
+      </div>
+      <button class="btn-primary" onclick="salvarConfig()">Salvar configurações</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <i class="ti ti-check" style="color:#1baf7a"></i>
+    <span id="toast-msg">Salvo!</span>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="src/app.js"></script>
+<script src="src/register-sw.js"></script>
+</body>
+</html>
